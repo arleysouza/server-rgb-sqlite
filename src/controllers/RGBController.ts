@@ -27,6 +27,24 @@ class RGBController {
     });
   };
 
+  // retorna o primeiro registro
+  private getFirst = (): Promise<Row | null> => {
+    const db = initDB();
+    const query = `SELECT id, r, g, b FROM tbrgb ORDER BY id ASC LIMIT 1`;
+
+    return new Promise((resolve, reject) => {
+      db.get(query, [], (err, row: Row | undefined) => {
+        if (err) {
+          console.error("Erro ao buscar o primeiro registro", err.message);
+          reject(err); // Rejeita a promise em caso de erro
+        } else {
+          // Retorna o registro ou null se não existir
+          resolve(row || null);
+        }
+      });
+    });
+  };
+
   // retorna o registro que possui o id especificado
   private getById = (id:number): Promise<Row | null> => {
     const db = initDB();
@@ -59,7 +77,13 @@ class RGBController {
           if(row){
             res.json(row);
           } else {
-            res.json({ id: 0, r: 0, g: 0, b: 0 });
+            const row = await this.getFirst();
+            if( row ){
+              res.json(row);
+            }
+            else{
+              res.json({ id: 0, r: 0, g: 0, b: 0 });
+            }
           }
         }
       } else {
